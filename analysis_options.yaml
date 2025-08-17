@@ -9,6 +9,18 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    body_might_complete_normally_nullable: ignore
+  plugins:
+    # The following plugins are used to enable code generation and linting.
+    # They are not required for the analyzer to function, but they provide
+    # additional functionality for code generation and linting.
+    - custom_lint
+  exclude:
+    - "**/*.g.dart"  # Exclude generated files from analysis
+
+
 formatter:
   trailing_commas: preserve
 
