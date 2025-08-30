@@ -20,6 +20,9 @@ abstract class MovieService {
   Future<Map<String, dynamic>> getAccountInfo();
   Future<MovieResponse> getRatedMovies({int page = 1});
   Future<MovieResponse> getWatchlist({int page = 1});
+
+  // Método para detalhes do filme
+  Future<Map<String, dynamic>> getMovieDetails(int movieId);
 }
 
 class MovieServiceImpl implements MovieService {
@@ -211,6 +214,23 @@ class MovieServiceImpl implements MovieService {
       return MovieResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception('Erro ao buscar watchlist: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getMovieDetails(int movieId) async {
+    try {
+      final response = await _dio.get(
+        '/movie/$movieId',
+        queryParameters: {
+          'language': 'pt-BR',
+          'append_to_response': 'credits,videos,images,recommendations',
+        },
+      );
+
+      return response.data;
+    } on DioException catch (e) {
+      throw Exception('Erro ao buscar detalhes do filme: ${e.message}');
     }
   }
 }

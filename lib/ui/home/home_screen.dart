@@ -5,6 +5,7 @@ import 'package:cinebox/ui/core/themes/colors.dart';
 import 'package:cinebox/ui/core/themes/resource.dart';
 import 'package:cinebox/ui/core/themes/text_styles.dart';
 import 'package:cinebox/ui/home/home_view_model.dart';
+import 'package:cinebox/ui/movie_details/movie_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -138,6 +139,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       );
     }
+  }
+
+  void _navigateToMovieDetails(Movie movie) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => MovieDetailsScreen(movie: movie),
+      ),
+    );
   }
 
   Widget _buildContent(Map<String, List<Movie>> movies) {
@@ -357,17 +366,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Stack(
             children: [
-              Container(
-                height: 200,
-                width: 140,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: movie.posterPath.isNotEmpty
-                        ? NetworkImage(movie.fullPosterPath)
-                        : AssetImage(R.ASSETS_IMAGES_NO_IMAGE_PNG)
-                              as ImageProvider,
-                    fit: BoxFit.cover,
+              GestureDetector(
+                onTap: () => _navigateToMovieDetails(movie),
+                child: Container(
+                  height: 200,
+                  width: 140,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: movie.posterPath.isNotEmpty
+                          ? NetworkImage(movie.fullPosterPath)
+                          : AssetImage(R.ASSETS_IMAGES_NO_IMAGE_PNG)
+                                as ImageProvider,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
