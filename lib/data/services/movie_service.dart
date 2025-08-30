@@ -15,6 +15,11 @@ abstract class MovieService {
   Future<bool> addToFavorites(int movieId);
   Future<bool> removeFromFavorites(int movieId);
   Future<MovieResponse> getFavoriteMovies({int page = 1});
+
+  // Métodos para conta do usuário
+  Future<Map<String, dynamic>> getAccountInfo();
+  Future<MovieResponse> getRatedMovies({int page = 1});
+  Future<MovieResponse> getWatchlist({int page = 1});
 }
 
 class MovieServiceImpl implements MovieService {
@@ -101,7 +106,7 @@ class MovieServiceImpl implements MovieService {
   Future<bool> addToFavorites(int movieId) async {
     try {
       final response = await _dio.post(
-        '/account/null/favorite',
+        '/account/22233413/favorite',
         data: {
           'media_type': 'movie',
           'media_id': movieId,
@@ -122,7 +127,7 @@ class MovieServiceImpl implements MovieService {
   Future<bool> removeFromFavorites(int movieId) async {
     try {
       final response = await _dio.post(
-        '/account/null/favorite',
+        '/account/22233413/favorite',
         data: {
           'media_type': 'movie',
           'media_id': movieId,
@@ -143,7 +148,7 @@ class MovieServiceImpl implements MovieService {
   Future<MovieResponse> getFavoriteMovies({int page = 1}) async {
     try {
       final response = await _dio.get(
-        '/account/null/favorite/movies',
+        '/account/22233413/favorite/movies',
         queryParameters: {
           'page': page,
           'language': 'pt-BR',
@@ -154,6 +159,58 @@ class MovieServiceImpl implements MovieService {
       return MovieResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception('Erro ao buscar filmes favoritos: ${e.message}');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAccountInfo() async {
+    try {
+      final response = await _dio.get(
+        '/account/22233413',
+        queryParameters: {
+          'language': 'pt-BR',
+        },
+      );
+
+      return response.data;
+    } on DioException catch (e) {
+      throw Exception('Erro ao buscar informações da conta: ${e.message}');
+    }
+  }
+
+  @override
+  Future<MovieResponse> getRatedMovies({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/account/22233413/rated/movies',
+        queryParameters: {
+          'page': page,
+          'language': 'pt-BR',
+          'sort_by': 'created_at.desc',
+        },
+      );
+
+      return MovieResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception('Erro ao buscar filmes avaliados: ${e.message}');
+    }
+  }
+
+  @override
+  Future<MovieResponse> getWatchlist({int page = 1}) async {
+    try {
+      final response = await _dio.get(
+        '/account/22233413/watchlist/movies',
+        queryParameters: {
+          'page': page,
+          'language': 'pt-BR',
+          'sort_by': 'created_at.desc',
+        },
+      );
+
+      return MovieResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception('Erro ao buscar watchlist: ${e.message}');
     }
   }
 }

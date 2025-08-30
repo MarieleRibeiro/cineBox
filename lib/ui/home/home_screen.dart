@@ -100,33 +100,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  void _toggleFavorite(Movie movie) {
-    // Usar o provider real de favoritos
-    ref.read(favoritesNotifierProvider.notifier).addToFavorites(movie);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${movie.title} adicionado aos favoritos!'),
-        backgroundColor: AppColors.success,
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'Desfazer',
-          textColor: Colors.white,
-          onPressed: () {
-            ref
-                .read(favoritesNotifierProvider.notifier)
-                .removeFromFavorites(movie.id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${movie.title} removido dos favoritos'),
-                backgroundColor: AppColors.error,
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          },
+  void _toggleFavorite(Movie movie, bool isFavorite) async {
+    try {
+      if (isFavorite) {
+        // Remover dos favoritos
+        await ref
+            .read(favoritesNotifierProvider.notifier)
+            .removeFromFavorites(movie.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${movie.title} removido dos favoritos'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // Adicionar aos favoritos
+        await ref
+            .read(favoritesNotifierProvider.notifier)
+            .addToFavorites(movie);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${movie.title} adicionado aos favoritos!'),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erro ao ${isFavorite ? 'remover' : 'adicionar'} favorito: $e',
+          ),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildContent(Map<String, List<Movie>> movies) {
@@ -363,27 +374,84 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Positioned(
                 bottom: 8,
                 right: 8,
-                child: GestureDetector(
-                  onTap: () => _toggleFavorite(movie),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(20),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    // Usar o estado atual dos favoritos para determinar se o filme está favoritado
+                    final favoritesAsync = ref.watch(favoritesNotifierProvider);
+
+                    return favoritesAsync.when(
+                      data: (favorites) {
+                        final isFavorite = favorites.any(
+                          (favorite) => favorite.id == movie.id,
+                        );
+
+                        return GestureDetector(
+                          onTap: () => _toggleFavorite(movie, isFavorite),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(20),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              size: 16,
+                              color: isFavorite
+                                  ? AppColors.redColor
+                                  : AppColors.lightGrey,
+                            ),
+                          ),
+                        );
+                      },
+                      loading: () => Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.favorite_border,
-                      size: 16,
-                      color: AppColors.redColor,
-                    ),
-                  ),
+                        child: const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      error: (error, stackTrace) => Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(20),
+                              blurRadius: 4,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.favorite_border,
+                          size: 16,
+                          color: AppColors.lightGrey,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],

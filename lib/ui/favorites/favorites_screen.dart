@@ -43,12 +43,35 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
             ),
           ),
           const Spacer(),
-          // Por enquanto mostrar dados estáticos
-          Text(
-            '0 filmes',
-            style: AppTextStyles.regularSmall.copyWith(
-              color: AppColors.lightGrey,
-            ),
+          // Mostrar quantidade dinâmica de filmes favoritos
+          Consumer(
+            builder: (context, ref, child) {
+              final favoritesAsync = ref.watch(favoritesNotifierProvider);
+
+              return favoritesAsync.when(
+                data: (favorites) {
+                  final count = favorites.length;
+                  return Text(
+                    '$count ${count == 1 ? 'filme' : 'filmes'}',
+                    style: AppTextStyles.regularSmall.copyWith(
+                      color: AppColors.lightGrey,
+                    ),
+                  );
+                },
+                loading: () => Text(
+                  'Carregando...',
+                  style: AppTextStyles.regularSmall.copyWith(
+                    color: AppColors.lightGrey,
+                  ),
+                ),
+                error: (error, stackTrace) => Text(
+                  'Erro ao carregar',
+                  style: AppTextStyles.regularSmall.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -250,7 +273,6 @@ class _FavoritesScreenState extends ConsumerState<FavoritesScreen> {
   }
 
   void _removeFromFavorites(int movieId) {
-    // Usar o provider real de favoritos
     ref.read(favoritesNotifierProvider.notifier).removeFromFavorites(movieId);
 
     ScaffoldMessenger.of(context).showSnackBar(
