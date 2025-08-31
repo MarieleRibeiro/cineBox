@@ -1,6 +1,7 @@
 import 'package:cinebox/data/models/genre.dart';
 import 'package:cinebox/data/models/movie.dart';
 import 'package:cinebox/data/services/favorites/favorites_provider.dart';
+import 'package:cinebox/data/services/movie_service.dart';
 import 'package:cinebox/ui/core/themes/colors.dart';
 import 'package:cinebox/ui/core/themes/resource.dart';
 import 'package:cinebox/ui/core/themes/text_styles.dart';
@@ -20,6 +21,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _selectedGenre;
   List<Movie> _filteredPopularMovies = [];
   List<Movie> _filteredTopMovies = [];
+
+  // Controle de busca
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  List<Movie> _searchResults = [];
+  bool _isSearching = false;
 
   @override
   Widget build(BuildContext context) {
@@ -149,14 +156,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  // Métodos de busca
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query.trim();
+      if (_searchQuery.isEmpty) {
+        _clearSearch();
+      }
+    });
+  }
+
+  void _onSearchSubmitted(String query) async {
+    if (query.trim().isEmpty) return;
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final movieService = ref.read(movieServiceProvider);
+      final searchResponse = await movieService.searchMovies(query.trim());
+      setState(() {
+        _searchResults = searchResponse.results;
+        _isSearching = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isSearching = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro na busca: $e'),
+          backgroundColor: AppColors.error,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchQuery = '';
+      _searchResults.clear();
+      _isSearching = false;
+    });
+    _searchController.clear();
+  }
+
   Widget _buildContent(Map<String, List<Movie>> movies) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildCategoryFilters(),
-          _buildPopularMovies(_filteredPopularMovies),
-          _buildTopMovies(_filteredTopMovies),
+
+          if (_searchQuery.isNotEmpty) ...[
+            _buildSearchResults(),
+          ] else ...[
+            _buildPopularMovies(_filteredPopularMovies),
+            _buildTopMovies(_filteredTopMovies),
+          ],
+
           const SizedBox(height: 20),
         ],
       ),
@@ -188,9 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               children: [
                 const Spacer(),
-                // Barra de pesquisa centralizada na parte inferior
                 _buildSearchBar(),
-                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -224,11 +282,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              'Procurar filme',
-              style: AppTextStyles.subtitleSmall,
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Procurar filme...',
+                hintStyle: AppTextStyles.subtitleSmall,
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              style: AppTextStyles.regularSmall.copyWith(
+                color: AppColors.darkGrey,
+              ),
+              onChanged: _onSearchChanged,
+              onSubmitted: _onSearchSubmitted,
             ),
           ),
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              onPressed: _clearSearch,
+              icon: Icon(
+                Icons.clear,
+                color: AppColors.lightGrey,
+                size: 20,
+              ),
+            ),
         ],
       ),
     );
@@ -357,6 +434,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildSearchResults() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Text(
+                'Resultados para: ',
+                style: AppTextStyles.boldMedium.copyWith(
+                  color: Colors.black,
+                ),
+              ),
+              Text(
+                '"$_searchQuery"',
+                style: AppTextStyles.boldMedium.copyWith(
+                  color: AppColors.redColor,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${_searchResults.length} ${_searchResults.length == 1 ? 'filme' : 'filmes'}',
+                style: AppTextStyles.regularSmall.copyWith(
+                  color: AppColors.lightGrey,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        if (_isSearching) ...[
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(32.0),
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        ] else if (_searchResults.isEmpty && _searchQuery.isNotEmpty) ...[
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 64,
+                    color: AppColors.lightGrey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Nenhum filme encontrado',
+                    style: AppTextStyles.boldMedium.copyWith(
+                      color: AppColors.darkGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tente uma busca diferente',
+                    style: AppTextStyles.regularSmall.copyWith(
+                      color: AppColors.lightGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ] else ...[
+          SizedBox(
+            height: 280,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _searchResults.length,
+              itemBuilder: (context, index) {
+                final movie = _searchResults[index];
+                return _buildMovieCard(movie);
+              },
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildMovieCard(Movie movie) {
     return Container(
       width: 140,
@@ -388,7 +551,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 right: 8,
                 child: Consumer(
                   builder: (context, ref, child) {
-                    // Usar o estado atual dos favoritos para determinar se o filme está favoritado
                     final favoritesAsync = ref.watch(favoritesNotifierProvider);
 
                     return favoritesAsync.when(
@@ -484,5 +646,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }

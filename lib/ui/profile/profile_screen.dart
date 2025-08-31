@@ -193,9 +193,7 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.lightGrey,
                 size: 16,
               ),
-              onTap: () {
-                // Implementar ações dos itens do menu
-              },
+              onTap: () {},
             ),
           );
         }).toList(),

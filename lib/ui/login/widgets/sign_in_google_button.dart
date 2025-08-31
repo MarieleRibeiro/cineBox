@@ -27,7 +27,7 @@ class _SignInGoogleButtonState extends State<SignInGoogleButton>
     _animationController = AnimationController(
       duration: const Duration(
         milliseconds: 100,
-      ), // Reduzido de 150ms para 100ms
+      ),
       vsync: this,
     );
     _scaleAnimation =

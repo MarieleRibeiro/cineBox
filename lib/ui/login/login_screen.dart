@@ -58,7 +58,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               viewModel.googleLogin();
                             },
                           ),
-                          // Mostrar mensagem de erro se houver
                           if (viewModel.hasError) ...[
                             const SizedBox(height: 16),
                             Container(
@@ -92,7 +91,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            // Botão para tentar novamente
                             if (viewModel.canRetry)
                               ElevatedButton.icon(
                                 onPressed: viewModel.retryLogin,
