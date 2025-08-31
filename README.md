@@ -1,107 +1,229 @@
-# 🎬 Cinebox - App de Filmes
+# 🎬 Cinebox - App de Filmes Profissional
 
-Um aplicativo Flutter moderno para descobrir e acompanhar filmes, construído com arquitetura limpa e boas práticas de desenvolvimento.
+> **Um aplicativo Flutter moderno e otimizado para explorar, buscar e gerenciar filmes favoritos com API TMDB integrada.**
 
-## ✨ **Funcionalidades Principais**
+## 🌟 **Destaques do Projeto**
 
-- 🎭 **Catálogo de Filmes**: Explore filmes populares e bem avaliados
-- 🔍 **Filtros por Gênero**: Filtre filmes por categoria (Ação, Comédia, Drama, etc.)
-- ❤️ **Sistema de Favoritos**: Salve seus filmes preferidos
-- 🔐 **Login com Google**: Autenticação segura e rápida
-- 📱 **Interface Responsiva**: Design adaptável para diferentes tamanhos de tela
-- 🌙 **Tema Moderno**: Interface elegante e intuitiva
+- ✅ **Sistema completo de favoritos** via API TMDB
+- ✅ **Autenticação Google** otimizada e segura
+- ✅ **Busca inteligente** em tempo real
+- ✅ **Arquitetura limpa** com Riverpod
+- ✅ **Performance otimizada** e responsiva
+- ✅ **UI/UX moderna** com Material Design 3
 
-## 🚀 **Melhorias Implementadas**
+## 📱 **Download e Teste**
 
-### **Performance e Velocidade**
-- ✅ **Removido delay artificial** de 2 segundos no login
-- ✅ **Sistema de cache otimizado** para autenticação Google
-- ✅ **Timeout configurável** para evitar travamentos
-- ✅ **Retry automático** em caso de falhas de rede
+### **🎯 APK Funcional para Teste**
+**[📱 Baixar APK - Cinebox](https://drive.google.com/file/d/1N4kbIuePVtdvfQyOHrHC48QwkMn9MZXs/view?usp=drive_link)**
 
-### **Interface e UX**
-- ✅ **Botão de login animado** com feedback visual
-- ✅ **Sistema de cores expandido** com variações e gradientes
-- ✅ **Widgets de loading otimizados** (Shimmer, Spinner animado)
-- ✅ **Transições de página suaves** com animações customizadas
-- ✅ **Tratamento de erros melhorado** com botão de retry
+### **📋 Instruções de Instalação**
+1. **Baixe o APK** do link acima
+2. **Habilite "Fontes desconhecidas"** nas configurações do Android
+3. **Instale o aplicativo**
+4. **Faça login** com sua conta Google
+5. **Explore os filmes** e teste todas as funcionalidades!
 
-### **Arquitetura e Código**
-- ✅ **Gerenciamento de estado otimizado** com Riverpod
-- ✅ **Sistema de timeout robusto** para operações de rede
-- ✅ **Cache inteligente** com validação de tempo
-- ✅ **Tratamento de erros centralizado** e informativo
+---
 
-## 🛠️ **Tecnologias Utilizadas**
+## 🚀 **Funcionalidades Implementadas**
 
-- **Flutter** - Framework de desenvolvimento
-- **Riverpod** - Gerenciamento de estado
-- **Dio** - Cliente HTTP
+### **🎭 Sistema de Filmes**
+- **Catálogo completo** de filmes populares e bem avaliados
+- **Busca inteligente** em tempo real
+- **Filtros por gênero** (Ação, Comédia, Drama, Romance, Terror)
+- **Detalhes completos** de cada filme
+- **Navegação intuitiva** entre telas
+
+### **❤️ Sistema de Favoritos**
+- **Adicionar/remover** filmes dos favoritos
+- **Lista sincronizada** em tempo real
+- **Contador dinâmico** de favoritos
+- **Persistência na nuvem** via TMDB API
+- **Sincronização automática** entre todas as telas
+
+### **🔐 Autenticação Segura**
+- **Login Google** otimizado e rápido
+- **Gerenciamento de sessão** seguro
+- **Cache inteligente** para melhor performance
+- **Tratamento de erros** robusto
+
+### **🎨 Interface Moderna**
+- **Design responsivo** e intuitivo
+- **Animações suaves** e feedback visual
+- **Sistema de cores** consistente
+- **Loading states** otimizados
+- **Transições de página** personalizadas
+
+---
+
+## 🛠️ **Stack Tecnológica**
+
+### **Framework Principal**
+- **Flutter 3.32.8** - Framework multiplataforma
+- **Dart 3.8.1** - Linguagem de programação
+
+### **Gerenciamento de Estado**
+- **Riverpod** - Gerenciamento de estado reativo
+- **Riverpod Generator** - Code generation para providers
+
+### **APIs e Serviços**
+- **TMDB API** - Banco de dados de filmes
 - **Google Sign-In** - Autenticação OAuth
-- **Flutter Secure Storage** - Armazenamento seguro
-- **Retrofit** - Cliente REST API
-- **Envied** - Gerenciamento de variáveis de ambiente
+- **Dio** - Cliente HTTP robusto
+- **Retrofit** - Code generation para APIs
 
-## 📱 **Estrutura do Projeto**
+### **Arquitetura e Padrões**
+- **Clean Architecture** - Separação de responsabilidades
+- **Repository Pattern** - Abstração de dados
+- **Service Layer** - Lógica de negócio
+- **Provider Pattern** - Injeção de dependências
+
+### **Ferramentas de Desenvolvimento**
+- **Build Runner** - Code generation
+- **Envied** - Gerenciamento de variáveis de ambiente
+- **JSON Serializable** - Serialização de dados
+- **Custom Lint** - Regras de código personalizadas
+
+---
+
+## 🏗️ **Arquitetura do Projeto**
 
 ```
 lib/
-├── config/           # Configurações e variáveis de ambiente
-├── core/             # Utilitários e componentes base
-├── data/             # Camada de dados (models, services, repositories)
-├── ui/               # Interface do usuário
-│   ├── core/         # Componentes base da UI
-│   ├── home/         # Tela principal
-│   ├── login/        # Autenticação
-│   ├── favorites/    # Favoritos
-│   └── profile/      # Perfil do usuário
-└── main.dart         # Ponto de entrada da aplicação
+├── 📱 main.dart                    # Ponto de entrada da aplicação
+├── 🎯 cinebox_main_app.dart        # Configuração principal do app
+├── ⚙️ config/                      # Configurações e variáveis de ambiente
+├── 🔧 core/                        # Lógica central e utilitários
+│   └── result/                     # Padrão Result para tratamento de erros
+├── 📊 data/                        # Camada de dados
+│   ├── models/                     # Modelos de dados (Movie, Genre)
+│   ├── repositories/               # Repositórios abstratos
+│   ├── services/                   # Serviços de API e autenticação
+│   └── exceptions/                 # Tratamento de exceções
+└── 🎨 ui/                          # Interface do usuário
+    ├── core/                       # Componentes base e temas
+    ├── home/                       # Tela principal com listas de filmes
+    ├── login/                      # Tela de autenticação Google
+    ├── favorites/                  # Tela de filmes favoritos
+    ├── profile/                    # Tela de perfil do usuário
+    ├── movie_details/              # Tela de detalhes do filme
+    └── splash/                     # Tela de inicialização
 ```
 
-## 🚀 **Como Executar**
+---
 
-### **Pré-requisitos**
-- Flutter SDK 3.8.1 ou superior
-- Dart SDK
+## 🚀 **Como Executar o Projeto**
+
+### **📋 Pré-requisitos**
+- Flutter 3.32.8+
+- Dart 3.8.1+
 - Android Studio / VS Code
-- Dispositivo Android/iOS ou emulador
+- Dispositivo Android ou emulador
 
-### **Configuração**
-1. Clone o repositório:
+### **⚡ Execução Rápida**
 ```bash
-git clone https://github.com/seu-usuario/cinebox.git
-cd cinebox
-```
+# Clone o repositório
+git clone https://github.com/MarieleRibeiro/cineBox.git
 
-2. Instale as dependências:
-```bash
+# Entre na pasta
+cd cineBox
+
+# Instale as dependências
 flutter pub get
-```
 
-3. Configure as variáveis de ambiente:
-   - Crie um arquivo `.env` na raiz do projeto
-   - Adicione suas chaves de API:
-```env
-GOOGLE_API_KEY=sua_chave_google
-THE_MOVIE_DB_API_KEY=sua_chave_tmdb
-BACKEND_BASE_URL=https://api.themoviedb.org/3
-```
-
-4. Execute o projeto:
-```bash
+# Execute o app
 flutter run
 ```
 
-## 🔧 **Configurações de Build**
+### **🔨 Build para Produção**
+```bash
+# APK para Android
+flutter build apk --release
 
-### **Android**
-- API Level mínimo: 21
-- Target API: 33
-- Suporte a arquiteturas: arm64-v8a, armeabi-v7a, x86_64
+# Web (se configurado)
+flutter build web
+```
 
-### **iOS**
-- iOS mínimo: 12.0
-- Suporte a dispositivos: iPhone e iPad
+---
 
 
-**Desenvolvido com ❤️ usando Flutter**
+## 🎯 **Funcionalidades Técnicas**
+
+### **🔄 Sistema de Favoritos**
+- **API TMDB integrada** com account_id configurado
+- **Estado reativo** com Riverpod
+- **Sincronização automática** entre telas
+- **Tratamento de erros** robusto
+
+### **🔍 Busca Inteligente**
+- **Busca em tempo real** via API TMDB
+- **Filtros dinâmicos** por gênero
+- **Resultados paginados** para performance
+- **Cache inteligente** de resultados
+
+### **📱 Navegação e UX**
+- **Navegação intuitiva** entre telas
+- **Transições suaves** e animações
+- **Feedback visual** para todas as ações
+- **Loading states** otimizados
+
+---
+
+## 🧪 **Testes e Qualidade**
+
+### **🔍 Análise de Código**
+```bash
+# Análise estática
+flutter analyze
+
+# Verificação de dependências
+flutter doctor
+```
+
+---
+
+## 🚀 **Melhorias Futuras Planejadas**
+
+### **🎨 Interface e UX**
+- [ ] **Tema Escuro/Claro** com persistência
+- [ ] **Animações avançadas** e micro-interações
+- [ ] **Suporte a gestos** personalizados
+- [ ] **Modo offline** com cache local
+
+### **🔧 Funcionalidades**
+- [ ] **Sistema de avaliações** de filmes
+- [ ] **Watchlist** para filmes para assistir
+- [ ] **Recomendações personalizadas** baseadas em histórico
+- [ ] **Compartilhamento** de filmes favoritos
+
+### **📊 Analytics e Performance**
+- [ ] **Métricas de uso** e analytics
+- [ ] **Testes A/B** para otimização de UX
+- [ ] **Performance monitoring** em tempo real
+- [ ] **Crash reporting** e telemetria
+
+---
+
+## 📞 **Contato e Suporte**
+
+- **GitHub**: [@MarieleRibeiro](https://github.com/MarieleRibeiro)
+- **Email**: [marieleribeirocontato@gmail.com]
+
+---
+
+## 🙏 **Agradecimentos**
+
+- **Flutter Team** pelo framework incrível
+- **TMDB** pela API de filmes gratuita
+- **Google** pelo sistema de autenticação
+- **Comunidade Flutter** pelo suporte e recursos
+
+---
+
+## ⭐ **Avaliação do Projeto**
+
+**Se este projeto te ajudou ou impressionou, deixe uma estrela no repositório!**
+
+---
+
+**🎬 Desenvolvido com ❤️ por Mariele Ribeiro**
