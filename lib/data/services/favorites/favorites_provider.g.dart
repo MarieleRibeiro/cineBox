@@ -1,4 +1,10 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
 part of 'favorites_provider.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
 
 @ProviderFor(favoritesService)
 const favoritesServiceProvider = FavoritesServiceProvider._();
@@ -90,3 +96,6 @@ abstract class _$FavoritesNotifier extends $AsyncNotifier<List<Movie>> {
     element.handleValue(ref, created);
   }
 }
+
+// ignore_for_file: type=lint
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

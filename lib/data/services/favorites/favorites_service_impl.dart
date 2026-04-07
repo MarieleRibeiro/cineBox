@@ -79,8 +79,8 @@ class FavoritesServiceImpl implements FavoritesService {
   @override
   Future<bool> isFavorite(int movieId) async {
     try {
-      // Por enquanto, sempre retornar false
-      return false;
+      final favorites = await getFavorites();
+      return favorites.any((movie) => movie.id == movieId);
     } catch (e, stackTrace) {
       log(
         'Erro ao verificar se é favorito: $movieId',
@@ -140,6 +140,11 @@ class FavoritesServiceImpl implements FavoritesService {
   Future<bool> clearFavorites() async {
     try {
       log('Limpando todos os favoritos', name: 'FavoritesService');
+
+      final favorites = await getFavorites();
+      for (final movie in favorites) {
+        await _movieService.removeFromFavorites(movie.id);
+      }
 
       log('Favoritos limpos com sucesso', name: 'FavoritesService');
       return true;

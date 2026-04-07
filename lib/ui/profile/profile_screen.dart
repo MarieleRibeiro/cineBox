@@ -1,13 +1,15 @@
+import 'package:cinebox/data/repositories/repositories_providers.dart';
+import 'package:cinebox/data/services/favorites/favorites_provider.dart';
 import 'package:cinebox/ui/core/themes/colors.dart';
-
 import 'package:cinebox/ui/core/themes/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
@@ -18,8 +20,8 @@ class ProfileScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    _buildProfileInfo(),
-                    _buildMenuOptions(),
+                    _buildProfileInfo(ref),
+                    _buildMenuOptions(context, ref),
                   ],
                 ),
               ),
@@ -41,19 +43,14 @@ class ProfileScreen extends StatelessWidget {
               color: AppColors.darkGrey,
             ),
           ),
-          const Spacer(),
-          Text(
-            '9:41',
-            style: AppTextStyles.regularSmall.copyWith(
-              color: AppColors.darkGrey,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildProfileInfo() {
+  Widget _buildProfileInfo(WidgetRef ref) {
+    final favoritesAsync = ref.watch(favoritesNotifierProvider);
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
@@ -88,16 +85,19 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'usuario@cinebox.com',
+            'Conectado via Google',
             style: AppTextStyles.subtitleSmall,
           ),
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildProfileStat('Filmes', '24'),
-              _buildProfileStat('Favoritos', '12'),
-              _buildProfileStat('Avaliações', '8'),
+              favoritesAsync.when(
+                data: (favorites) =>
+                    _buildProfileStat('Favoritos', '${favorites.length}'),
+                loading: () => _buildProfileStat('Favoritos', '...'),
+                error: (_, __) => _buildProfileStat('Favoritos', '0'),
+              ),
             ],
           ),
         ],
@@ -122,7 +122,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuOptions() {
+  Widget _buildMenuOptions(BuildContext context, WidgetRef ref) {
     final menuItems = [
       {
         'icon': Icons.settings,
@@ -148,6 +148,7 @@ class ProfileScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: menuItems.map((item) {
+          final isLogout = item['title'] == 'Sair';
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
@@ -170,18 +171,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Icon(
                   item['icon'] as IconData,
-                  color: item['title'] == 'Sair'
-                      ? AppColors.redColor
-                      : AppColors.darkGrey,
+                  color: isLogout ? AppColors.redColor : AppColors.darkGrey,
                   size: 24,
                 ),
               ),
               title: Text(
                 item['title'] as String,
                 style: AppTextStyles.boldSmall.copyWith(
-                  color: item['title'] == 'Sair'
-                      ? AppColors.redColor
-                      : Colors.black,
+                  color: isLogout ? AppColors.redColor : Colors.black,
                 ),
               ),
               subtitle: Text(
@@ -193,11 +190,56 @@ class ProfileScreen extends StatelessWidget {
                 color: AppColors.lightGrey,
                 size: 16,
               ),
-              onTap: () {},
+              onTap: isLogout
+                  ? () => _handleLogout(context, ref)
+                  : () {},
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  void _handleLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sair'),
+        content: const Text('Tem certeza que deseja sair da sua conta?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.redColor,
+            ),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final authRepository = ref.read(authRepositoryProvider);
+        await authRepository.signOut();
+        if (context.mounted) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/login', (route) => false);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao fazer logout: $e'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
   }
 }

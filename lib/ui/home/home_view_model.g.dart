@@ -10,7 +10,7 @@ part of 'home_view_model.dart';
 const homeViewModelProvider = HomeViewModelProvider._();
 
 final class HomeViewModelProvider
-    extends $AsyncNotifierProvider<HomeViewModel, Map<String, List<Movie>>> {
+    extends $AsyncNotifierProvider<HomeViewModel, HomeMoviesState> {
   const HomeViewModelProvider._()
     : super(
         from: null,
@@ -30,29 +30,20 @@ final class HomeViewModelProvider
   HomeViewModel create() => HomeViewModel();
 }
 
-String _$homeViewModelHash() => r'3a10d82bdb939036fe8dd59ceb31e7984c7f6941';
+String _$homeViewModelHash() => r'6c7e88e0a3ebfc0299c4cb83328bd42e9658b4bb';
 
-abstract class _$HomeViewModel
-    extends $AsyncNotifier<Map<String, List<Movie>>> {
-  FutureOr<Map<String, List<Movie>>> build();
+abstract class _$HomeViewModel extends $AsyncNotifier<HomeMoviesState> {
+  FutureOr<HomeMoviesState> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref =
-        this.ref
-            as $Ref<
-              AsyncValue<Map<String, List<Movie>>>,
-              Map<String, List<Movie>>
-            >;
+    final ref = this.ref as $Ref<AsyncValue<HomeMoviesState>, HomeMoviesState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<Map<String, List<Movie>>>,
-                Map<String, List<Movie>>
-              >,
-              AsyncValue<Map<String, List<Movie>>>,
+              AnyNotifier<AsyncValue<HomeMoviesState>, HomeMoviesState>,
+              AsyncValue<HomeMoviesState>,
               Object?,
               Object?
             >;

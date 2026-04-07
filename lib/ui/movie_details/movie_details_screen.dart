@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cinebox/data/models/movie.dart';
-import 'package:cinebox/data/services/movie_service.dart';
+import 'package:cinebox/data/models/movie_details.dart';
 import 'package:cinebox/ui/core/themes/colors.dart';
 import 'package:cinebox/ui/core/themes/text_styles.dart';
 import 'package:cinebox/ui/core/widgets/optimized_loading.dart';
+import 'package:cinebox/ui/core/mixins/favorite_actions.dart';
 import 'package:cinebox/data/services/favorites/favorites_provider.dart';
+import 'package:cinebox/ui/movie_details/movie_details_view_model.dart';
 
-class MovieDetailsScreen extends ConsumerStatefulWidget {
+class MovieDetailsScreen extends ConsumerWidget with FavoriteActions {
   final Movie movie;
 
   const MovieDetailsScreen({
@@ -16,38 +18,19 @@ class MovieDetailsScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MovieDetailsScreen> createState() => _MovieDetailsScreenState();
-}
-
-class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
-  late Future<Map<String, dynamic>> _movieDetailsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _movieDetailsFuture = _loadMovieDetails();
-  }
-
-  Future<Map<String, dynamic>> _loadMovieDetails() async {
-    final movieService = ref.read(movieServiceProvider);
-    return await movieService.getMovieDetails(widget.movie.id);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    debugPrint('MovieDetailsScreen: ${widget.movie.toJson()}');
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(),
-          _buildContent(),
+          _buildAppBar(context, ref),
+          _buildContent(context, ref),
         ],
       ),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(BuildContext context, WidgetRef ref) {
     return SliverAppBar(
       expandedHeight: 400,
       pinned: true,
@@ -58,7 +41,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
           children: [
             // Imagem de fundo do filme
             Image.network(
-              widget.movie.fullPosterPath,
+              movie.fullPosterPath,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
@@ -106,67 +89,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             Positioned(
               top: MediaQuery.of(context).padding.top + 16,
               right: 16,
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final favoritesAsync = ref.watch(favoritesNotifierProvider);
-
-                  return favoritesAsync.when(
-                    data: (favorites) {
-                      final isFavorite = favorites.any(
-                        (favorite) => favorite.id == widget.movie.id,
-                      );
-
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withAlpha(50),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: IconButton(
-                          onPressed: () => _toggleFavorite(isFavorite),
-                          icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite
-                                ? AppColors.redColor
-                                : Colors.white,
-                          ),
-                        ),
-                      );
-                    },
-                    loading: () => Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(50),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const IconButton(
-                        onPressed: null,
-                        icon: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    error: (error, stackTrace) => Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withAlpha(50),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: IconButton(
-                        onPressed: () => _toggleFavorite(false),
-                        icon: const Icon(
-                          Icons.favorite_border,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+              child: _buildFavoriteButton(context, ref),
             ),
             // Informações básicas do filme
             Positioned(
@@ -177,7 +100,7 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.movie.title,
+                    movie.title,
                     style: AppTextStyles.titleLarge.copyWith(
                       color: Colors.white,
                       fontSize: 28,
@@ -198,22 +121,22 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          widget.movie.year,
+                          movie.year,
                           style: AppTextStyles.regularSmall.copyWith(
                             color: Colors.white,
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      if (widget.movie.voteAverage > 0) ...[
-                        Icon(
+                      if (movie.voteAverage > 0) ...[
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          widget.movie.voteAverage.toStringAsFixed(1),
+                          movie.voteAverage.toStringAsFixed(1),
                           style: AppTextStyles.regularSmall.copyWith(
                             color: Colors.white,
                           ),
@@ -230,7 +153,65 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildFavoriteButton(BuildContext context, WidgetRef ref) {
+    final favoritesAsync = ref.watch(favoritesNotifierProvider);
+
+    return favoritesAsync.when(
+      data: (favorites) {
+        final isFavorite = favorites.any(
+          (favorite) => favorite.id == movie.id,
+        );
+
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withAlpha(50),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: IconButton(
+            onPressed: () => toggleFavorite(context, ref, movie, isFavorite),
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? AppColors.redColor : Colors.white,
+            ),
+          ),
+        );
+      },
+      loading: () => Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withAlpha(50),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const IconButton(
+          onPressed: null,
+          icon: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+        ),
+      ),
+      error: (_, __) => Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withAlpha(50),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: IconButton(
+          onPressed: () => toggleFavorite(context, ref, movie, false),
+          icon: const Icon(
+            Icons.favorite_border,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, WidgetRef ref) {
+    final movieDetailsAsync = ref.watch(movieDetailsProvider(movie.id));
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -241,8 +222,8 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             _buildSection(
               title: 'Sinopse',
               child: Text(
-                widget.movie.overview.isNotEmpty
-                    ? widget.movie.overview
+                movie.overview.isNotEmpty
+                    ? movie.overview
                     : 'Sinopse não disponível.',
                 style: AppTextStyles.regularSmall.copyWith(
                   color: AppColors.darkGrey,
@@ -253,109 +234,85 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Detalhes do filme
-            FutureBuilder<Map<String, dynamic>>(
-              future: _movieDetailsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildSection(
-                    title: 'Detalhes',
-                    child: const OptimizedLoading(),
-                  );
-                }
-
-                if (snapshot.hasError) {
-                  return _buildSection(
-                    title: 'Detalhes',
-                    child: Text(
-                      'Erro ao carregar detalhes: ${snapshot.error}',
-                      style: AppTextStyles.regularSmall.copyWith(
-                        color: AppColors.error,
-                      ),
-                    ),
-                  );
-                }
-
-                final movieDetails = snapshot.data!;
-                return Column(
-                  children: [
-                    // Gêneros
-                    if (movieDetails['genres'] != null) ...[
-                      _buildSection(
-                        title: 'Gêneros',
-                        child: Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: (movieDetails['genres'] as List)
-                              .map(
-                                (genre) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.lightGrey,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Text(
-                                    genre['name'] ?? '',
-                                    style: AppTextStyles.regularSmall.copyWith(
-                                      color: AppColors.darkGrey,
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Informações técnicas
-                    _buildSection(
-                      title: 'Informações Técnicas',
-                      child: Column(
-                        children: [
-                          _buildInfoRow(
-                            'Duração',
-                            movieDetails['runtime'] != null
-                                ? '${movieDetails['runtime']} min'
-                                : 'Não informado',
-                          ),
-                          _buildInfoRow(
-                            'Status',
-                            movieDetails['status'] ?? 'Não informado',
-                          ),
-                          _buildInfoRow(
-                            'Data de Lançamento',
-                            movieDetails['release_date'] ?? 'Não informada',
-                          ),
-                          _buildInfoRow(
-                            'Orçamento',
-                            movieDetails['budget'] != null &&
-                                    movieDetails['budget'] > 0
-                                ? '\$${(movieDetails['budget'] / 1000000).toStringAsFixed(1)}M'
-                                : 'Não informado',
-                          ),
-                          _buildInfoRow(
-                            'Receita',
-                            movieDetails['revenue'] != null &&
-                                    movieDetails['revenue'] > 0
-                                ? '\$${(movieDetails['revenue'] / 1000000).toStringAsFixed(1)}M'
-                                : 'Não informado',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+            // Detalhes do filme via Riverpod
+            movieDetailsAsync.when(
+              data: (details) => _buildDetailsSection(details),
+              loading: () => _buildSection(
+                title: 'Detalhes',
+                child: const OptimizedLoading(),
+              ),
+              error: (error, _) => _buildSection(
+                title: 'Detalhes',
+                child: Text(
+                  'Erro ao carregar detalhes: $error',
+                  style: AppTextStyles.regularSmall.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 40),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDetailsSection(MovieDetails details) {
+    return Column(
+      children: [
+        // Gêneros
+        if (details.genres.isNotEmpty) ...[
+          _buildSection(
+            title: 'Gêneros',
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: details.genres
+                  .map(
+                    (genre) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightGrey,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        genre.name,
+                        style: AppTextStyles.regularSmall.copyWith(
+                          color: AppColors.darkGrey,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        // Informações técnicas
+        _buildSection(
+          title: 'Informações Técnicas',
+          child: Column(
+            children: [
+              _buildInfoRow('Duração', details.formattedRuntime),
+              _buildInfoRow('Status', details.status ?? 'Não informado'),
+              _buildInfoRow(
+                'Data de Lançamento',
+                details.releaseDate.isNotEmpty
+                    ? details.releaseDate
+                    : 'Não informada',
+              ),
+              _buildInfoRow('Orçamento', details.formattedBudget),
+              _buildInfoRow('Receita', details.formattedRevenue),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -405,43 +362,5 @@ class _MovieDetailsScreenState extends ConsumerState<MovieDetailsScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _toggleFavorite(bool isFavorite) async {
-    try {
-      if (isFavorite) {
-        await ref
-            .read(favoritesNotifierProvider.notifier)
-            .removeFromFavorites(widget.movie.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.movie.title} removido dos favoritos'),
-            backgroundColor: AppColors.error,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else {
-        await ref
-            .read(favoritesNotifierProvider.notifier)
-            .addToFavorites(widget.movie);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.movie.title} adicionado aos favoritos!'),
-            backgroundColor: AppColors.success,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Erro ao ${isFavorite ? 'remover' : 'adicionar'} favorito: $e',
-          ),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    }
   }
 }

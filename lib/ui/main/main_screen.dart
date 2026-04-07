@@ -1,3 +1,4 @@
+import 'package:cinebox/ui/core/themes/colors.dart';
 import 'package:cinebox/ui/favorites/favorites_screen.dart';
 import 'package:cinebox/ui/home/home_screen.dart';
 import 'package:cinebox/ui/profile/profile_screen.dart';
@@ -48,17 +49,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xffEA4335), // AppColors.redColor
-        unselectedItemColor: const Color(0xFF9B9B9B), // AppColors.lightGrey
+        selectedItemColor: AppColors.redColor,
+        unselectedItemColor: AppColors.lightGrey,
         selectedLabelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: Color(0xffEA4335),
+          color: AppColors.redColor,
         ),
         unselectedLabelStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF9B9B9B),
+          color: AppColors.lightGrey,
         ),
         items: const [
           BottomNavigationBarItem(
@@ -78,3 +79,4 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     );
   }
 }
+

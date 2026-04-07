@@ -1,4 +1,5 @@
 import 'package:cinebox/data/core/rest_client/tmdb_rest_client_provider.dart';
+import 'package:cinebox/data/models/movie_details.dart';
 import 'package:cinebox/data/models/movie_response.dart';
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,13 +23,32 @@ abstract class MovieService {
   Future<MovieResponse> getWatchlist({int page = 1});
 
   // Método para detalhes do filme
-  Future<Map<String, dynamic>> getMovieDetails(int movieId);
+  Future<MovieDetails> getMovieDetails(int movieId);
 }
 
 class MovieServiceImpl implements MovieService {
   final Dio _dio;
 
+  // Account ID obtido dinamicamente
+  String? _accountId;
+
   MovieServiceImpl(this._dio);
+
+  /// Obtém o account ID da sessão atual do TMDB
+  Future<String> _getAccountId() async {
+    if (_accountId != null) return _accountId!;
+
+    try {
+      final response = await _dio.get(
+        '/account',
+        queryParameters: {'language': 'pt-BR'},
+      );
+      _accountId = response.data['id'].toString();
+      return _accountId!;
+    } on DioException catch (e) {
+      throw Exception('Erro ao obter account ID: ${e.message}');
+    }
+  }
 
   @override
   Future<MovieResponse> getPopularMovies({int page = 1}) async {
@@ -108,8 +128,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<bool> addToFavorites(int movieId) async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.post(
-        '/account/22233413/favorite',
+        '/account/$accountId/favorite',
         data: {
           'media_type': 'movie',
           'media_id': movieId,
@@ -129,8 +150,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<bool> removeFromFavorites(int movieId) async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.post(
-        '/account/22233413/favorite',
+        '/account/$accountId/favorite',
         data: {
           'media_type': 'movie',
           'media_id': movieId,
@@ -150,8 +172,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<MovieResponse> getFavoriteMovies({int page = 1}) async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.get(
-        '/account/22233413/favorite/movies',
+        '/account/$accountId/favorite/movies',
         queryParameters: {
           'page': page,
           'language': 'pt-BR',
@@ -168,8 +191,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<Map<String, dynamic>> getAccountInfo() async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.get(
-        '/account/22233413',
+        '/account/$accountId',
         queryParameters: {
           'language': 'pt-BR',
         },
@@ -184,8 +208,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<MovieResponse> getRatedMovies({int page = 1}) async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.get(
-        '/account/22233413/rated/movies',
+        '/account/$accountId/rated/movies',
         queryParameters: {
           'page': page,
           'language': 'pt-BR',
@@ -202,8 +227,9 @@ class MovieServiceImpl implements MovieService {
   @override
   Future<MovieResponse> getWatchlist({int page = 1}) async {
     try {
+      final accountId = await _getAccountId();
       final response = await _dio.get(
-        '/account/22233413/watchlist/movies',
+        '/account/$accountId/watchlist/movies',
         queryParameters: {
           'page': page,
           'language': 'pt-BR',
@@ -218,7 +244,7 @@ class MovieServiceImpl implements MovieService {
   }
 
   @override
-  Future<Map<String, dynamic>> getMovieDetails(int movieId) async {
+  Future<MovieDetails> getMovieDetails(int movieId) async {
     try {
       final response = await _dio.get(
         '/movie/$movieId',
@@ -228,7 +254,7 @@ class MovieServiceImpl implements MovieService {
         },
       );
 
-      return response.data;
+      return MovieDetails.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception('Erro ao buscar detalhes do filme: ${e.message}');
     }

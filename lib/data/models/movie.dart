@@ -79,4 +79,12 @@ class Movie {
   String get year => releaseDate.isNotEmpty ? releaseDate.split('-')[0] : '';
 
   String get formattedVoteAverage => voteAverage.toStringAsFixed(1);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Movie && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 }
